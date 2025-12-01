@@ -1,0 +1,411 @@
+'use client';
+
+import { useAuthStore } from '@/store/authStore';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { Mail, FileText, AlertTriangle, TrendingUp, Clock, CheckCircle2, BarChart3, Droplet, Thermometer, Biohazard, Radio, Wrench } from 'lucide-react';
+import { ALERTAS, Alerta } from '@/data/mockData';
+
+export default function AlertasPage() {
+  const { user } = useAuthStore();
+  const router = useRouter();
+  const [alertas, setAlertas] = useState<Alerta[]>(ALERTAS);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
+  const [nivelFilter, setNivelFilter] = useState('todos');
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+  }, [user, router]);
+
+  const fetchAlertas = async () => {
+    try {
+      // Dados já carregados de mockData
+      setAlertas(ALERTAS);
+      setLoading(false);
+    } catch (error) {
+      console.error('Erro ao carregar alertas:', error);
+      setLoading(false);
+    }
+  };
+        {
+          id: 2,
+          bombona_identificacao: 'LAB-001',
+          empresa: 'Laboratório Fleury',
+          tipo: 'temperatura_alta',
+          nivel: 'alto',
+          descricao: 'Temperatura da bombona de perfurocortantes acima do limite (28°C)',
+          data_alerta: '2024-01-22T14:15:00Z',
+          resolvido: true,
+          data_resolucao: '2024-01-22T16:30:00Z',
+          observacoes_resolucao: 'Sistema de refrigeração ajustado',
+          tipo_residuo: 'hospitalar_perfurocortante'
+        },
+        {
+          id: 3,
+          bombona_identificacao: 'IND-001',
+          empresa: 'Instituto do Câncer',
+          tipo: 'contaminacao',
+          nivel: 'critico',
+          descricao: 'Possível vazamento detectado na bombona de resíduos tóxicos',
+          data_alerta: '2024-01-20T11:45:00Z',
+          resolvido: false,
+          tipo_residuo: 'industrial_toxico'
+        },
+        {
+          id: 4,
+          bombona_identificacao: 'QUI-001',
+          empresa: 'Hospital Albert Einstein',
+          tipo: 'nivel_alto',
+          nivel: 'medio',
+          descricao: 'Bombona de solventes orgânicos atingiu 80% da capacidade',
+          data_alerta: '2024-01-23T09:20:00Z',
+          resolvido: true,
+          data_resolucao: '2024-01-23T15:45:00Z',
+          observacoes_resolucao: 'Coleta programada para amanhã',
+          tipo_residuo: 'solventes_organicos'
+        },
+        {
+          id: 5,
+          bombona_identificacao: 'MET-001',
+          empresa: 'Santa Casa de Misericórdia',
+          tipo: 'sensor_falha',
+          nivel: 'medio',
+          descricao: 'Sensor de peso da bombona de metais pesados não está respondendo',
+          data_alerta: '2024-01-21T16:30:00Z',
+          resolvido: false,
+          tipo_residuo: 'metais_pesados'
+        },
+        {
+          id: 6,
+          bombona_identificacao: 'FAR-001',
+          empresa: 'Hospital Israelita',
+          tipo: 'manutencao',
+          nivel: 'baixo',
+          descricao: 'Manutenção preventiva necessária na bombona farmacêutica',
+          data_alerta: '2024-01-24T10:00:00Z',
+          resolvido: false,
+          tipo_residuo: 'farmaceutico'
+        },
+        {
+          id: 7,
+          bombona_identificacao: 'HOS-002',
+          empresa: 'Hospital Sírio-Libanês',
+          tipo: 'vazamento',
+          nivel: 'alto',
+          descricao: 'Detecção de umidade anormal ao redor da bombona química',
+          data_alerta: '2024-01-22T13:15:00Z',
+          resolvido: true,
+          data_resolucao: '2024-01-22T17:20:00Z',
+          observacoes_resolucao: 'Vedação substituída e testada',
+          tipo_residuo: 'hospitalar_quimico'
+        },
+        {
+          id: 8,
+          bombona_identificacao: 'PER-001',
+          empresa: 'Hospital Copa D\'Or',
+          tipo: 'nivel_critico',
+          nivel: 'critico',
+          descricao: 'Bombona de resíduos perigosos lotada - risco de contaminação',
+          data_alerta: '2024-01-23T07:45:00Z',
+          resolvido: false,
+          tipo_residuo: 'outros_perigosos'
+        }
+      ];
+      setAlertas(mockAlertas);
+    } catch (error) {
+      console.error('Erro ao carregar alertas:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getNivelColor = (nivel: string) => {
+    switch (nivel) {
+      case 'baixo':
+        return 'bg-blue-100 text-blue-800';
+      case 'medio':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'alto':
+        return 'bg-orange-100 text-orange-800';
+      case 'critico':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getTipoIcon = (tipo: string) => {
+    switch (tipo) {
+      case 'nivel_alto':
+      case 'nivel_critico':
+        return <TrendingUp className="w-5 h-5" />;
+      case 'temperatura_alta':
+        return <Thermometer className="w-5 h-5" />;
+      case 'contaminacao':
+        return <Biohazard className="w-5 h-5" />;
+      case 'vazamento':
+        return <Droplet className="w-5 h-5" />;
+      case 'manutencao':
+        return <Wrench className="w-5 h-5" />;
+      case 'sensor_falha':
+        return <Radio className="w-5 h-5" />;
+      default:
+        return <AlertTriangle className="w-5 h-5" />;
+    }
+  };
+
+  const getTipoResiduoText = (tipo: string) => {
+    const tipos: { [key: string]: string } = {
+      'hospitalar_infectante': 'Hospitalar Infectante',
+      'hospitalar_quimico': 'Hospitalar Químico',
+      'hospitalar_perfurocortante': 'Perfurocortante',
+      'industrial_toxico': 'Industrial Tóxico',
+      'solventes_organicos': 'Solventes Orgânicos',
+      'metais_pesados': 'Metais Pesados',
+      'farmaceutico': 'Farmacêutico',
+      'outros_perigosos': 'Outros Perigosos'
+    };
+    return tipos[tipo] || tipo;
+  };
+
+  const filteredAlertas = alertas.filter((alerta) => {
+    const matchesSearch = alerta.bombona_identificacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         alerta.empresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         alerta.descricao.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'todos' || 
+                         (statusFilter === 'pendentes' && !alerta.resolvido) ||
+                         (statusFilter === 'resolvidos' && alerta.resolvido);
+    const matchesNivel = nivelFilter === 'todos' || alerta.nivel === nivelFilter;
+    return matchesSearch && matchesStatus && matchesNivel;
+  });
+
+  const resolverAlerta = async (alertaId: number) => {
+    // Simular resolução do alerta
+    setAlertas(alertas.map(alerta => 
+      alerta.id === alertaId 
+        ? { 
+            ...alerta, 
+            resolvido: true, 
+            data_resolucao: new Date().toISOString(),
+            observacoes_resolucao: 'Resolvido manualmente pelo operador'
+          }
+        : alerta
+    ));
+  };
+
+  if (!user) {
+    return <div>Carregando...</div>;
+  }
+
+  const topBarActions = (
+    <>
+      <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+        <Mail className="w-4 h-4" />
+        Notificar Equipe
+      </button>
+      <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+        <FileText className="w-4 h-4" />
+        Relatório
+      </button>
+      <button className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+        <AlertTriangle className="w-4 h-4" />
+        Alerta Manual
+      </button>
+    </>
+  );
+
+  return (
+    <DashboardLayout title="Sistema de Alertas" topBarActions={topBarActions}>
+      <div className="space-y-6">
+        {/* Search and Filters */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Buscar por bombona, empresa ou descrição..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="todos">Todos os status</option>
+              <option value="pendentes">Pendentes</option>
+              <option value="resolvidos">Resolvidos</option>
+            </select>
+            <select
+              value={nivelFilter}
+              onChange={(e) => setNivelFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="todos">Todos os níveis</option>
+              <option value="critico">Crítico</option>
+              <option value="alto">Alto</option>
+              <option value="medio">Médio</option>
+              <option value="baixo">Baixo</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="p-3 bg-red-100 rounded-xl">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Alertas Críticos</p>
+                <p className="text-2xl font-bold text-gray-900">{alertas.filter(a => a.nivel === 'critico' && !a.resolvido).length}</p>
+                <p className="text-xs text-red-600">Ação imediata necessária</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="p-3 bg-yellow-100 rounded-xl">
+                <Clock className="w-6 h-6 text-yellow-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Pendentes</p>
+                <p className="text-2xl font-bold text-gray-900">{alertas.filter(a => !a.resolvido).length}</p>
+                <p className="text-xs text-yellow-600">Aguardando resolução</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="p-3 bg-green-100 rounded-xl">
+                <CheckCircle2 className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Resolvidos Hoje</p>
+                <p className="text-2xl font-bold text-gray-900">{alertas.filter(a => a.resolvido && a.data_resolucao && new Date(a.data_resolucao).toDateString() === new Date().toDateString()).length}</p>
+                <p className="text-xs text-green-600">Processados com sucesso</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="p-3 bg-blue-100 rounded-xl">
+                <BarChart3 className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total de Alertas</p>
+                <p className="text-2xl font-bold text-gray-900">{alertas.length}</p>
+                <p className="text-xs text-blue-600">Período atual</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Alertas Cards */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="p-6 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900">Alertas do Sistema</h3>
+            <p className="text-sm text-gray-500 mt-1">Monitoramento de bombonas de resíduos hospitalares em tempo real</p>
+          </div>
+          
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+              <p className="mt-2 text-gray-500">Carregando alertas...</p>
+            </div>
+          ) : (
+            <div className="p-6">
+              <div className="space-y-4">
+                {filteredAlertas.map((alerta) => (
+                  <div key={alerta.id} className={`border rounded-lg p-4 ${alerta.resolvido ? 'bg-gray-50 border-gray-200' : alerta.nivel === 'critico' ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'}`}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-3">
+                        <div className="text-gray-700">{getTipoIcon(alerta.tipo)}</div>
+                        <div className="flex-1">
+                          <div className="flex items-center space-x-2 mb-2">
+                            <h4 className="font-semibold text-gray-900">{alerta.bombona_identificacao}</h4>
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${getNivelColor(alerta.nivel)}`}>
+                              {alerta.nivel.toUpperCase()}
+                            </span>
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                              {getTipoResiduoText(alerta.tipo_residuo)}
+                            </span>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-2">{alerta.empresa}</p>
+                          <p className="text-sm text-gray-900 mb-3">{alerta.descricao}</p>
+                          
+                          <div className="flex items-center space-x-4 text-xs text-gray-500">
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {new Date(alerta.data_alerta).toLocaleString('pt-BR')}
+                            </span>
+                            {alerta.resolvido && alerta.data_resolucao && (
+                              <span className="flex items-center gap-1">
+                                <CheckCircle2 className="w-3 h-3" />
+                                Resolvido em {new Date(alerta.data_resolucao).toLocaleString('pt-BR')}
+                              </span>
+                            )}
+                          </div>
+                          
+                          {alerta.resolvido && alerta.observacoes_resolucao && (
+                            <div className="mt-2 p-2 bg-green-50 rounded text-sm text-green-800">
+                              <strong>Resolução:</strong> {alerta.observacoes_resolucao}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="flex space-x-2">
+                        {!alerta.resolvido && (
+                          <>
+                            <button 
+                              onClick={() => resolverAlerta(alerta.id)}
+                              className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm transition-colors flex items-center gap-1"
+                            >
+                              <CheckCircle2 className="w-3 h-3" />
+                              Resolver
+                            </button>
+                            <button className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm transition-colors flex items-center gap-1">
+                              <FileText className="w-3 h-3" />
+                              Detalhes
+                            </button>
+                          </>
+                        )}
+                        {alerta.resolvido && (
+                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 gap-1">
+                            <CheckCircle2 className="w-3 h-3" />
+                            Resolvido
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {filteredAlertas.length === 0 && (
+                <div className="text-center py-8">
+                  <AlertTriangle className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum alerta encontrado</h3>
+                  <p className="text-gray-500">Tente ajustar os filtros ou termos de busca.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}

@@ -1,0 +1,447 @@
+'use client';
+
+import { useAuthStore } from '@/store/authStore';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import DashboardLayout from '@/components/layout/DashboardLayout';
+import { FileText, Download, Plus, Folder, CheckCircle2, AlertTriangle, Wrench } from 'lucide-react';
+
+interface Bombona {
+  id: number;
+  identificacao: string;
+  empresa: string;
+  tipo_residuo: string;
+  capacidade: number;
+  peso_atual: number;
+  percentual_ocupacao: number;
+  status: 'normal' | 'quase_cheia' | 'cheia' | 'manutencao';
+  localizacao: string;
+  ultima_coleta: string;
+  proxima_coleta: string;
+  temperatura: number;
+}
+
+export default function BombonasPage() {
+  const { user } = useAuthStore();
+  const router = useRouter();
+  const [bombonas, setBombonas] = useState<Bombona[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('todos');
+  const [tipoFilter, setTipoFilter] = useState('todos');
+
+  useEffect(() => {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    fetchBombonas();
+  }, [user, router]);
+
+  const fetchBombonas = async () => {
+    try {
+      // Dados com resíduos hospitalares
+      const mockBombonas: Bombona[] = [
+        {
+          id: 1,
+          identificacao: 'HOS-001',
+          empresa: 'Hospital das Clínicas - USP',
+          tipo_residuo: 'hospitalar_infectante',
+          capacidade: 120,
+          peso_atual: 102,
+          percentual_ocupacao: 85,
+          status: 'quase_cheia',
+          localizacao: 'UTI - Ala Norte',
+          ultima_coleta: '2024-01-15',
+          proxima_coleta: '2024-01-22',
+          temperatura: 24.5,
+        },
+        {
+          id: 2,
+          identificacao: 'HOS-002',
+          empresa: 'Hospital Sírio-Libanês',
+          tipo_residuo: 'hospitalar_quimico',
+          capacidade: 80,
+          peso_atual: 45,
+          percentual_ocupacao: 56,
+          status: 'normal',
+          localizacao: 'Centro Cirúrgico',
+          ultima_coleta: '2024-01-18',
+          proxima_coleta: '2024-01-25',
+          temperatura: 22.1,
+        },
+        {
+          id: 3,
+          identificacao: 'LAB-001',
+          empresa: 'Laboratório Fleury',
+          tipo_residuo: 'hospitalar_perfurocortante',
+          capacidade: 50,
+          peso_atual: 12,
+          percentual_ocupacao: 24,
+          status: 'normal',
+          localizacao: 'Sala de Coleta 1',
+          ultima_coleta: '2024-01-20',
+          proxima_coleta: '2024-01-27',
+          temperatura: 23.8,
+        },
+        {
+          id: 4,
+          identificacao: 'IND-001',
+          empresa: 'Instituto do Câncer',
+          tipo_residuo: 'industrial_toxico',
+          capacidade: 200,
+          peso_atual: 180,
+          percentual_ocupacao: 90,
+          status: 'cheia',
+          localizacao: 'Depósito de Resíduos',
+          ultima_coleta: '2024-01-10',
+          proxima_coleta: '2024-01-21',
+          temperatura: 25.2,
+        },
+        {
+          id: 5,
+          identificacao: 'QUI-001',
+          empresa: 'Hospital Albert Einstein',
+          tipo_residuo: 'solventes_organicos',
+          capacidade: 100,
+          peso_atual: 75,
+          percentual_ocupacao: 75,
+          status: 'quase_cheia',
+          localizacao: 'Laboratório de Análises',
+          ultima_coleta: '2024-01-16',
+          proxima_coleta: '2024-01-23',
+          temperatura: 21.5,
+        },
+        {
+          id: 6,
+          identificacao: 'MET-001',
+          empresa: 'Santa Casa de Misericórdia',
+          tipo_residuo: 'metais_pesados',
+          capacidade: 60,
+          peso_atual: 22,
+          percentual_ocupacao: 37,
+          status: 'normal',
+          localizacao: 'Radiologia',
+          ultima_coleta: '2024-01-19',
+          proxima_coleta: '2024-01-26',
+          temperatura: 23.0,
+        },
+        {
+          id: 7,
+          identificacao: 'FAR-001',
+          empresa: 'Hospital Israelita',
+          tipo_residuo: 'farmaceutico',
+          capacidade: 80,
+          peso_atual: 15,
+          percentual_ocupacao: 19,
+          status: 'normal',
+          localizacao: 'Farmácia Hospitalar',
+          ultima_coleta: '2024-01-21',
+          proxima_coleta: '2024-01-28',
+          temperatura: 22.8,
+        },
+        {
+          id: 8,
+          identificacao: 'PER-001',
+          empresa: 'Hospital Copa D\'Or',
+          tipo_residuo: 'outros_perigosos',
+          capacidade: 150,
+          peso_atual: 95,
+          percentual_ocupacao: 63,
+          status: 'manutencao',
+          localizacao: 'Depósito Geral',
+          ultima_coleta: '2024-01-12',
+          proxima_coleta: '2024-01-24',
+          temperatura: 26.1,
+        }
+      ];
+      setBombonas(mockBombonas);
+    } catch (error) {
+      console.error('Erro ao carregar bombonas:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'normal':
+        return 'bg-green-100 text-green-800';
+      case 'quase_cheia':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'cheia':
+        return 'bg-red-100 text-red-800';
+      case 'manutencao':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case 'normal':
+        return 'Normal';
+      case 'quase_cheia':
+        return 'Quase Cheia';
+      case 'cheia':
+        return 'Cheia';
+      case 'manutencao':
+        return 'Manutenção';
+      default:
+        return status;
+    }
+  };
+
+  const getTipoResiduoText = (tipo: string) => {
+    const tipos: { [key: string]: string } = {
+      'hospitalar_infectante': 'Hospitalar Infectante',
+      'hospitalar_quimico': 'Hospitalar Químico',
+      'hospitalar_perfurocortante': 'Perfurocortante',
+      'industrial_toxico': 'Industrial Tóxico',
+      'solventes_organicos': 'Solventes Orgânicos',
+      'metais_pesados': 'Metais Pesados',
+      'acidos_bases': 'Ácidos e Bases',
+      'laboratorio_quimico': 'Laboratório Químico',
+      'farmaceutico': 'Farmacêutico',
+      'outros_perigosos': 'Outros Perigosos'
+    };
+    return tipos[tipo] || tipo;
+  };
+
+  const filteredBombonas = bombonas.filter((bombona) => {
+    const matchesSearch = bombona.identificacao.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         bombona.empresa.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         bombona.localizacao.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = statusFilter === 'todos' || bombona.status === statusFilter;
+    const matchesTipo = tipoFilter === 'todos' || bombona.tipo_residuo === tipoFilter;
+    return matchesSearch && matchesStatus && matchesTipo;
+  });
+
+  if (!user) {
+    return <div>Carregando...</div>;
+  }
+
+  const topBarActions = (
+    <>
+      <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+        <FileText className="w-4 h-4" />
+        Relatório
+      </button>
+      <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2">
+        <Download className="w-4 h-4" />
+        Exportar
+      </button>
+      <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
+        <Plus className="w-4 h-4" />
+        Nova Bombona
+      </button>
+    </>
+  );
+
+  return (
+    <DashboardLayout title="Gestão de Bombonas" topBarActions={topBarActions}>
+      <div className="space-y-6">
+        {/* Search and Filters */}
+        <div className="flex flex-col lg:flex-row gap-4">
+          <div className="flex-1">
+            <input
+              type="text"
+              placeholder="Buscar por ID, empresa ou localização..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            />
+          </div>
+          <div className="flex gap-2">
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="todos">Todos os status</option>
+              <option value="normal">Normal</option>
+              <option value="quase_cheia">Quase Cheia</option>
+              <option value="cheia">Cheia</option>
+              <option value="manutencao">Manutenção</option>
+            </select>
+            <select
+              value={tipoFilter}
+              onChange={(e) => setTipoFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            >
+              <option value="todos">Todos os tipos</option>
+              <option value="hospitalar_infectante">Hospitalar Infectante</option>
+              <option value="hospitalar_quimico">Hospitalar Químico</option>
+              <option value="hospitalar_perfurocortante">Perfurocortante</option>
+              <option value="industrial_toxico">Industrial Tóxico</option>
+              <option value="farmaceutico">Farmacêutico</option>
+              <option value="outros_perigosos">Outros Perigosos</option>
+            </select>
+          </div>
+        </div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="p-3 bg-blue-100 rounded-xl">
+                <Folder className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Total de Bombonas</p>
+                <p className="text-2xl font-bold text-gray-900">{bombonas.length}</p>
+                <p className="text-xs text-blue-600">Resíduos hospitalares</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="p-3 bg-green-100 rounded-xl">
+                <CheckCircle2 className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Status Normal</p>
+                <p className="text-2xl font-bold text-gray-900">{bombonas.filter(b => b.status === 'normal').length}</p>
+                <p className="text-xs text-green-600">Operacionais</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="p-3 bg-yellow-100 rounded-xl">
+                <AlertTriangle className="w-6 h-6 text-yellow-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Necessitam Coleta</p>
+                <p className="text-2xl font-bold text-gray-900">{bombonas.filter(b => b.status === 'cheia' || b.status === 'quase_cheia').length}</p>
+                <p className="text-xs text-yellow-600">Urgente</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+            <div className="flex items-center">
+              <div className="p-3 bg-red-100 rounded-xl">
+                <Wrench className="w-6 h-6 text-red-600" />
+              </div>
+              <div className="ml-4">
+                <p className="text-sm font-medium text-gray-600">Em Manutenção</p>
+                <p className="text-2xl font-bold text-gray-900">{bombonas.filter(b => b.status === 'manutencao').length}</p>
+                <p className="text-xs text-red-600">Indisponíveis</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Bombonas Grid */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="p-6 border-b border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-900">Bombonas de Resíduos Hospitalares</h3>
+            <p className="text-sm text-gray-500 mt-1">Monitoramento em tempo real das bombonas de resíduos médicos</p>
+          </div>
+          
+          {loading ? (
+            <div className="p-8 text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
+              <p className="mt-2 text-gray-500">Carregando bombonas...</p>
+            </div>
+          ) : (
+            <div className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredBombonas.map((bombona) => (
+                  <div key={bombona.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center">
+                        <Folder className="w-5 h-5 mr-2 text-gray-600" />
+                        <div>
+                          <h4 className="font-semibold text-gray-900">{bombona.identificacao}</h4>
+                          <p className="text-sm text-gray-500">{bombona.empresa}</p>
+                        </div>
+                      </div>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(bombona.status)}`}>
+                        {getStatusText(bombona.status)}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 mb-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Tipo:</span>
+                        <span className="font-medium">{getTipoResiduoText(bombona.tipo_residuo)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Localização:</span>
+                        <span className="font-medium">{bombona.localizacao}</span>
+                      </div>
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Temperatura:</span>
+                        <span className="font-medium">{bombona.temperatura}°C</span>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div className="mb-4">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span className="text-gray-600">Ocupação</span>
+                        <span className="font-medium">{bombona.percentual_ocupacao}%</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            bombona.percentual_ocupacao >= 90 ? 'bg-red-500' :
+                            bombona.percentual_ocupacao >= 75 ? 'bg-yellow-500' : 'bg-green-500'
+                          }`}
+                          style={{ width: `${bombona.percentual_ocupacao}%` }}
+                        ></div>
+                      </div>
+                      <div className="flex justify-between text-xs text-gray-500 mt-1">
+                        <span>{bombona.peso_atual} kg</span>
+                        <span>{bombona.capacidade} kg</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1 text-sm text-gray-600 mb-4">
+                      <div className="flex justify-between">
+                        <span>Última coleta:</span>
+                        <span>{new Date(bombona.ultima_coleta).toLocaleDateString('pt-BR')}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Próxima coleta:</span>
+                        <span className="font-medium">{new Date(bombona.proxima_coleta).toLocaleDateString('pt-BR')}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex space-x-2">
+                      <button className="flex-1 bg-green-50 hover:bg-green-100 text-green-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                        Ver Detalhes
+                      </button>
+                      <button className="bg-blue-50 hover:bg-blue-100 text-blue-700 p-2 rounded-lg transition-colors">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </button>
+                      <button className="bg-yellow-50 hover:bg-yellow-100 text-yellow-700 p-2 rounded-lg transition-colors">
+                        <Wrench className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {filteredBombonas.length === 0 && (
+                <div className="text-center py-8">
+                  <Folder className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma bombona encontrada</h3>
+                  <p className="text-gray-500">Tente ajustar os filtros ou termos de busca.</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+}
